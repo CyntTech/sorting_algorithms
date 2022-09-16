@@ -1,83 +1,95 @@
 #include "sort.h"
-#include <stdio.h>
+
+void swap_ints(int *a, int *b);
+int hoare_partition(int *array, size_t size, int left, int right);
+void hoare_sort(int *array, size_t size, int left, int right);
+void quick_sort_hoare(int *array, size_t size);
 
 /**
- * bitonic_compare - sort the values in a sub-array with respect to
- * the Bitonic sort algorithm
- * @up: direction of sorting
- * @array: sub-array to sort
- * @size: size of the sub-array
- *
- * Return: void
+ * swap_ints - Swap two integers in an array.
+ * @a: The first integer to swap.
+ * @b: The second integer to swap.
  */
-void bitonic_compare(char up, int *array, size_t size)
+void swap_ints(int *a, int *b)
 {
-	size_t i, dist;
-	int swap;
+	int tmp;
 
-	dist = size / 2;
-	for (i = 0; i < dist; i++)
+	tmp = *a;
+	*a = *b;
+	*b = tmp;
+}
+
+/**
+ * hoare_partition - Order a subset of an array of integers
+ *                   according to the hoare partition scheme.
+ * @array: The array of integers.
+ * @size: The size of the array.
+ * @left: The starting index of the subset to order.
+ * @right: The ending index of the subset to order.
+ *
+ * Return: The final partition index.
+ *
+ * Description: This uses the last element of the partition as the pivot.
+ * Prints the array after each swap of two elements.
+ */
+int hoare_partition(int *array, size_t size, int left, int right)
+{
+	int pivot, above, below;
+
+	pivot = array[right];
+	for (above = left - 1, below = right + 1; above < below;)
 	{
-		if ((array[i] > array[i + dist]) == up)
+		do {
+			above++;
+		} while (array[above] < pivot);
+		do {
+			below--;
+		} while (array[below] > pivot);
+
+		if (above < below)
 		{
-			swap = array[i];
-			array[i] = array[i + dist];
-			array[i + dist] = swap;
+			swap_ints(array + above, array + below);
+			print_array(array, size);
 		}
+	}
+
+	return (above);
+}
+
+/**
+ * hoare_sort - Implement the quicksort algorithm through recursion.
+ * @array: An array of integers to sort.
+ * @size: The size of the array.
+ * @left: The starting index of the array partition to order.
+ * @right: The ending index of the array partition to order.
+ *
+ * Description: Uses the Hoare partition scheme.
+ */
+void hoare_sort(int *array, size_t size, int left, int right)
+{
+	int part;
+
+	if (right - left > 0)
+	{
+		part = hoare_partition(array, size, left, right);
+		hoare_sort(array, size, left, part - 1);
+		hoare_sort(array, size, part, right);
 	}
 }
 
 /**
- * bitonic_merge - recursive function that merges two sub-arrays
- * @up: direction of sorting
- * @array: sub-array to sort
- * @size: size of the sub-array
+ * quick_sort_hoare - Sort an array of integers in ascending
+ *                    order using the quicksort algorithm.
+ * @array: An array of integers.
+ * @size: The size of the array.
  *
- * Return: void
+ * Description: Uses the Hoare partition scheme. Prints
+ * the array after each swap of two elements.
  */
-void bitonic_merge(char up, int *array, size_t size)
-{
-	if (size < 2)
-		return;
-	bitonic_compare(up, array, size);
-	bitonic_merge(up, array, size / 2);
-	bitonic_merge(up, array + (size / 2), size / 2);
-}
-
-/**
- * bit_sort - recursive function using the Bitonic sort algorithm
- * @up: direction of sorting
- * @array: sub-array to sort
- * @size: size of the sub-array
- * @t: total size of the original array
- *
- * Return: void
- */
-void bit_sort(char up, int *array, size_t size, size_t t)
-{
-	if (size < 2)
-		return;
-	printf("Merging [%lu/%lu] (%s):\n", size, t, (up == 1) ? "UP" : "DOWN");
-	print_array(array, size);
-	bit_sort(1, array, size / 2, t);
-	bit_sort(0, array + (size / 2), size / 2, t);
-	bitonic_merge(up, array, size);
-	printf("Result [%lu/%lu] (%s):\n", size, t, (up == 1) ? "UP" : "DOWN");
-	print_array(array, size);
-
-}
-
-/**
- * bitonic_sort - sorts an array of integers in ascending order using
- * the Bitonic sort algorithm
- * @array: array to sort
- * @size: size of the array
- *
- * Return: void
- */
-void bitonic_sort(int *array, size_t size)
+void quick_sort_hoare(int *array, size_t size)
 {
 	if (array == NULL || size < 2)
 		return;
-	bit_sort(1, array, size, size);
+
+	hoare_sort(array, size, 0, size - 1);
 }
